@@ -38,6 +38,23 @@ class Boo {
     Boo();
 
     /**
+     * @brief Loads an existing Boo context, if it exists in this directory
+     * or any ancestor directories
+     *
+     * @return true if able to load the context
+     * @return false otherwise
+     */
+    bool load_existing_context();
+
+    /**
+     * @brief Create a Boo context
+     *
+     * @return true if successfully created
+     * @return false otherwise
+     */
+    bool create_context();
+
+    /**
      * @brief Create a default Options object with no options
      *
      * @return cxxopts::Options default options

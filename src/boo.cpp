@@ -62,6 +62,16 @@ void Boo::handle_status(int argc, char* argv[]) {
     debug_log("Handling STATUS function");
 }
 
+bool Boo::load_existing_context() {
+    debug_log("Attempting to load an existing Boo context");
+    return false;
+}
+
+bool Boo::create_context() {
+    debug_log("Creating a new Boo context");
+    return false;
+}
+
 void Boo::debug_log(string s) {
     if (verbose) {
         cerr << "[DEBUG] " << s << endl;
