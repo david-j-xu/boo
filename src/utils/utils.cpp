@@ -9,7 +9,7 @@
  *
  */
 #include "utils.h"
-namespace boo::utils {
+namespace boo::bit_utils {
 u32 rotate_left(u32 val, u8 amount) {
     return (val << amount) | (val >> (32 - amount));
 }
@@ -22,4 +22,4 @@ int next_multiple(const int a, const int b) {
     if (a % b == 0) return a;
     return ((a / b) * b + b);
 }
-}  // namespace boo::utils
+}  // namespace boo::bit_utils

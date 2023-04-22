@@ -39,8 +39,8 @@ void sha_obj::update(string block) {
     }
 
     for (int i = BLOCK_SIZE / WORD_SIZE; i < WORD_COUNT; ++i) {
-        w[i] =
-            utils::rotate_left(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
+        w[i] = bit_utils::rotate_left(
+            w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
     }
 
     u32 a = h0;
@@ -66,10 +66,10 @@ void sha_obj::update(string block) {
             k = 0xCA62C1D6;
         }
 
-        u32 temp = utils::rotate_left(a, 5) + f + e + k + w[i];
+        u32 temp = bit_utils::rotate_left(a, 5) + f + e + k + w[i];
         e = d;
         d = c;
-        c = utils::rotate_left(b, 30);
+        c = bit_utils::rotate_left(b, 30);
         b = a;
         a = temp;
     }
@@ -90,7 +90,8 @@ namespace sha {
 u64 hash(string line) {
     sha_obj hasher;
     for (int i = 0;
-         i < utils::next_multiple((int)line.length(), BLOCK_SIZE) / BLOCK_SIZE;
+         i <
+         bit_utils::next_multiple((int)line.length(), BLOCK_SIZE) / BLOCK_SIZE;
          ++i) {
         hasher.update(line.substr(i * BLOCK_SIZE, BLOCK_SIZE));
     }
@@ -100,4 +101,4 @@ u64 hash(string line) {
 
 }  // namespace sha
 
-}
+}  // namespace boo

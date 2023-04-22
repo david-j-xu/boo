@@ -23,6 +23,9 @@ $(OBJDIR)%.o : src/%.cpp
 $(OBJDIR)%.o : src/utils/%.cpp
 	$(CC) $(CFLAGS) -c $^ -o $@
 
+$(OBJDIR)%.o : src/include/%.cpp
+	$(CC) $(CFLAGS) -c $^ -o $@
+
 run: $(BINDIR)$(PROG)
 	./$< $(RUNOPTIONS)
 
