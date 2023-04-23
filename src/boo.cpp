@@ -22,8 +22,12 @@ using namespace std;
 #define BOO_DIR ".boo"
 #define LOG_FILE_NAME "log"
 #define META_FILE_NAME "meta"
+#define HEAD_FILE_NAME "head"
 
 namespace boo {
+commit_t::commit_t(string hash, string message)
+    : message(message), hash(hash) {}
+
 BooContext::BooContext() : repo_dir() {}
 
 bool BooContext::load_existing_context() {
@@ -47,6 +51,30 @@ bool BooContext::load_existing_context() {
     }
 
     return false;
+}
+
+void BooContext::set_head(string commit) {
+    ofstream head(get_head_file(), ios::trunc);
+    head << commit << endl;
+    head.close();
+}
+
+string BooContext::get_head() {
+    namespace fs = filesystem;
+    if (fs::exists(get_head_file())) {
+        ifstream head_f(get_head_file());
+        string head;
+        head_f >> head;
+        head_f.close();
+        return head;
+    } else {
+        // no head currently exists!
+        return "";
+    }
+}
+
+string BooContext::get_head_file() {
+    return (repo_dir / BOO_DIR / HEAD_FILE_NAME).string();
 }
 
 void BooContext::calculate_current_hashes() {
@@ -114,6 +142,7 @@ bool BooContext::commit(string message) {
 
     log_commit(commit_hash.get_hash_string(), message);
     ofstream meta(get_meta_file_of_commit(commit_hash.get_hash_string()));
+    set_head(commit_hash.get_hash_string());
 
     // write metadata
     for (auto const& dir_entry : fs::recursive_directory_iterator(repo_dir)) {
@@ -123,7 +152,7 @@ bool BooContext::commit(string message) {
         }
 
         if (dir_entry.is_regular_file()) {
-            meta << fs::absolute(dir_entry.path()) << endl;
+            meta << fs::absolute(dir_entry.path()).string() << endl;
             meta << file_hashes[dir_entry.path().string()] << endl << endl;
         }
     }
@@ -161,6 +190,37 @@ string BooContext::get_meta_file_of_commit(string commit) {
 }
 
 string BooContext::get_log_file() { return repo_dir / BOO_DIR / LOG_FILE_NAME; }
+
+vector<commit_t> BooContext::parse_log() {
+    debug_log("Parsing config file...");
+    vector<commit_t> commits;
+    ifstream log(get_log_file());
+
+    string commit_hash, message;
+    int message_length;
+    while (!log.eof()) {
+        log >> commit_hash >> message_length;
+
+        // if the line was empty, just return
+        if (log.eof()) break;
+
+        // ignore new line
+        log.ignore(1);
+
+        char message_arr[message_length + 1];
+        log.read(message_arr, message_length);
+
+        message = string(message_arr, message_length);
+
+        debug_log("Found commit " + commit_hash + " with message <" + message +
+                  "> (" + to_string(message_length) + " bytes)");
+        commits.push_back(commit_t(commit_hash, message));
+        log.ignore(2);
+    }
+    log.close();
+
+    return commits;
+}
 
 const unordered_set<string> Boo::commands{INIT, COMMIT, RESET, LOG, STATUS};
 unordered_map<string, string> Boo::command_descriptions{
@@ -206,19 +266,57 @@ void Boo::handle_commit(int argc, char* argv[]) {
              << endl;
         exit(-1);
     }
+    auto options = createOptions();
+
+    options.add_options()(
+        "m, message", "Commit message",
+        cxxopts::value<string>()->default_value("No message provided"));
+
+    auto result = options.parse(argc, argv);
+
     ctx.calculate_current_hashes();
-    ctx.commit("hi");
+    ctx.commit(result["message"].as<string>());
 }
 
 void Boo::handle_reset(int argc, char* argv[]) {
+    if (!ctx.load_existing_context()) {
+        cout << "Unable to load repository in this or any parent directories. "
+                "Have you initialized a Boo repository?"
+             << endl;
+        exit(-1);
+    }
+    auto commits = ctx.parse_log();
     debug_log("Handling RESET function");
 }
 
 void Boo::handle_log(int argc, char* argv[]) {
     debug_log("Handling LOG function");
+    if (!ctx.load_existing_context()) {
+        cout << "Unable to load repository in this or any parent directories. "
+                "Have you initialized a Boo repository?"
+             << endl;
+        exit(-1);
+    }
+    auto commits = ctx.parse_log();
+    string head_commit = ctx.get_head();
+
+    for (auto itr = commits.rbegin(); itr != commits.rend(); ++itr) {
+        commit_t commit = *itr;
+        string head_msg =
+            commit.hash == ctx.get_head() ? "\033[1;31m(HEAD)\033[0m" : "";
+        cout << "Commit: " << commit.hash << "\t" << head_msg << "\n"
+             << "Message: " << commit.message << "\n"
+             << endl;
+    }
 }
 
 void Boo::handle_status(int argc, char* argv[]) {
+    if (!ctx.load_existing_context()) {
+        cout << "Unable to load repository in this or any parent directories. "
+                "Have you initialized a Boo repository?"
+             << endl;
+        exit(-1);
+    }
     debug_log("Handling STATUS function");
 }
 

@@ -1,7 +1,7 @@
 # Boo
 
 ## Overview
-A minimal version of Git (only supporting single branches so far) implemented in C++ for the lolzies. It supports minimal versions of commit, log, diff, reset, and status. Changes are automatically staged for now.
+A minimal version of Git (only supporting single branches so far) implemented in C++ for the lolzies. It supports minimal versions of init, commit, log, reset, and status commands. Changes are automatically staged for now.
 
 
 ## .boo Format
@@ -20,3 +20,5 @@ file_path
 file_hash
 <CRLF>
 ```
+
+Lastly, I have a file called `head` containing the commit of head

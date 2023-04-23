@@ -33,6 +33,23 @@ bool verbose = false;
  */
 void debug_log(std::string s);
 
+/**
+ * @brief representation of a boo commit
+ *
+ */
+struct commit_t {
+    std::string message;
+    std::string hash;
+
+    /**
+     * @brief Construct a new commit object
+     *
+     * @param message
+     * @param hash
+     */
+    commit_t(std::string message, std::string hash);
+};
+
 class BooContext {
    public:
     BooContext();
@@ -92,6 +109,35 @@ class BooContext {
      * @return std::string the log filepath
      */
     std::string get_log_file();
+
+    /**
+     * @brief Parses the log file into a list of commits arranged
+     * chronologically
+     *
+     * @return std::vector<commit> the commits
+     */
+    std::vector<commit_t> parse_log();
+
+    /**
+     * @brief Sets the head to the specified
+     *
+     * @param commit
+     */
+    void set_head(std::string commit);
+
+    /**
+     * @brief Gets the commit hash of the head
+     *
+     * @return std::string the head commit
+     */
+    std::string get_head();
+
+    /**
+     * @brief Get the head file name
+     *
+     * @return std::string the file name
+     */
+    std::string get_head_file();
 
    private:
     std::filesystem::path repo_dir;
