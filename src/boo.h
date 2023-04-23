@@ -11,6 +11,7 @@
 #pragma once
 #include <unistd.h>
 
+#include <chrono>
 #include <filesystem>
 #include <functional>
 #include <iostream>
@@ -24,18 +25,17 @@
 #include "utils/utils.h"
 
 namespace boo {
-class Boo {
-   public:
-    static const std::unordered_set<std::string> commands;
-    static std::unordered_map<std::string, std::string> command_descriptions;
-    std::unordered_map<std::string, std::function<void(int, char*[])>>
-        command_handlers;
+bool verbose = false;
+/**
+ * @brief Debug logging
+ *
+ * @param the log statement
+ */
+void debug_log(std::string s);
 
-    /**
-     * @brief Construct a new Boo object
-     *
-     */
-    Boo();
+class BooContext {
+   public:
+    BooContext();
 
     /**
      * @brief Loads an existing Boo context, if it exists in this directory
@@ -49,10 +49,69 @@ class Boo {
     /**
      * @brief Create a Boo context
      *
-     * @return true if successfully created
+     * @return true if created a new context
      * @return false otherwise
      */
     bool create_context();
+
+    /**
+     * @brief does a hash of each of the files, and a total hash for a commit
+     * if it were to exist
+     *
+     */
+    void calculate_current_hashes();
+
+    /**
+     * @brief Creates a commit. Contingent on hashes being calculated beforehand
+     *
+     * @param message the commit message
+     * @return true if commit was successful
+     * @return false otherwise
+     */
+    bool commit(std::string message);
+
+    /**
+     * @brief Logs a commit to the end of the log
+     *
+     * @param commit_hash
+     * @param message
+     */
+    void log_commit(std::string commit_hash, std::string message);
+
+    /**
+     * @brief Get the meta filename of commit object
+     *
+     * @param commit the commit hash
+     * @return std::string the path to the meta file
+     */
+    std::string get_meta_file_of_commit(std::string commit);
+
+    /**
+     * @brief Gets the filepath to the log file
+     *
+     * @return std::string the log filepath
+     */
+    std::string get_log_file();
+
+   private:
+    std::filesystem::path repo_dir;
+    sha_obj commit_hash;  // the hash if we were to commit this
+    std::unordered_map<std::string, std::string>
+        file_hashes;  // the file hashes
+};
+
+class Boo {
+   public:
+    static const std::unordered_set<std::string> commands;
+    static std::unordered_map<std::string, std::string> command_descriptions;
+    std::unordered_map<std::string, std::function<void(int, char*[])>>
+        command_handlers;
+
+    /**
+     * @brief Construct a new Boo object
+     *
+     */
+    Boo();
 
     /**
      * @brief Create a default Options object with no options
@@ -116,8 +175,7 @@ class Boo {
     void print_available_commands();
 
    private:
-    bool verbose;
-    void debug_log(std::string s);
+    BooContext ctx;
 };
 }  // namespace boo
 

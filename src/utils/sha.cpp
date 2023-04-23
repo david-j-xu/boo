@@ -27,7 +27,7 @@ sha_obj::sha_obj() {
 }
 
 /* takes in a block of length 512 and updates the hash value */
-void sha_obj::update(string block) {
+void sha_obj::update_block(string block) {
     string bl = block.substr(0, BLOCK_SIZE);
     u32 w[WORD_COUNT];
 
@@ -86,19 +86,14 @@ u64 sha_obj::get_hash() {
            ((u64)h3 << 12) | (u64)h4;
 }
 
-namespace sha {
-u64 hash(string line) {
-    sha_obj hasher;
+string sha_obj::get_hash_string() { return to_string(get_hash()); }
+
+void sha_obj::update(string line) {
     for (int i = 0;
          i <
          bit_utils::next_multiple((int)line.length(), BLOCK_SIZE) / BLOCK_SIZE;
          ++i) {
-        hasher.update(line.substr(i * BLOCK_SIZE, BLOCK_SIZE));
+        update_block(line.substr(i * BLOCK_SIZE, BLOCK_SIZE));
     }
-
-    return hasher.get_hash();
 }
-
-}  // namespace sha
-
 }  // namespace boo

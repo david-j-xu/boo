@@ -14,7 +14,7 @@ number_of_bytes_in_commit_message
 commit_message
 <CRLF>
 ```
-Additionally, there is a file for each commit, containing for each file in the repository
+Additionally, there is a file for each commit, containing for each file in the repository, named meta<COMMIT_NAME>
 ```
 file_path
 file_hash

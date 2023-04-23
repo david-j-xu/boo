@@ -28,11 +28,10 @@ class sha_obj {
 
    public:
     sha_obj(void);
-    void update(std::string block);
+    void update_block(std::string block);
+    void update(std::string line);
     u64 get_hash();
+
+    std::string get_hash_string();
 };
-namespace sha {
-/* hash a line pointed to by string */
-u64 hash(std::string line);
-}  // namespace sha
 }  // namespace boo
