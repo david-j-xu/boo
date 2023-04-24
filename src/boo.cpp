@@ -420,8 +420,44 @@ void Boo::handle_reset(int argc, char* argv[]) {
         exit(-1);
     }
 
+    auto current_hashes = ctx.calculate_current_hashes();
+
     if (ctx.reset(commit, force)) {
-        cout << "Successfully reset to commit " + commit << endl;
+        auto reset_hashes = ctx.parse_meta_file(commit);
+        auto [new_files, modified_files, deleted_files] =
+            ctx.calculate_diffs(current_hashes, reset_hashes);
+
+        if (new_files.size()) {
+            cout << "\033[1mNew Files:\033[0m"
+                 << "\n";
+            cout << "\033[1;32m";
+            for (const auto& file : new_files) {
+                cout << "+\t" << file << endl;
+            }
+            cout << "\033[0m";
+        }
+
+        if (modified_files.size()) {
+            cout << "\033[1mModified Files:\033[0m"
+                 << "\n";
+            cout << "\033[1;33m";
+            for (const auto& file : modified_files) {
+                cout << "+/-\t" << file << endl;
+            }
+            cout << "\033[0m";
+        }
+
+        if (deleted_files.size()) {
+            cout << "\033[1mDeleted Files:\033[0m"
+                 << "\n";
+            cout << "\033[1;31m";
+            for (const auto& file : deleted_files) {
+                cout << "-\t" << file << endl;
+            }
+            cout << "\033[0m";
+        }
+
+        cout << "Successfully reset and set HEAD to commit " + commit << endl;
     } else {
         cout << "Reset unsuccessful. You may be overwriting staged changes, "
                 "for which you would need the -f tag. Otherwise, are you sure "
