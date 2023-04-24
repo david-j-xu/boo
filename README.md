@@ -21,4 +21,4 @@ file_hash
 <CRLF>
 ```
 
-Lastly, I have a file called `head` containing the commit of head
+Lastly, I have a file called `head` containing the current head commit

@@ -28,7 +28,15 @@ sha_obj::sha_obj() {
 
 /* takes in a block of length 512 and updates the hash value */
 void sha_obj::update_block(string block) {
-    string bl = block.substr(0, BLOCK_SIZE);
+    char bl[BLOCK_SIZE];
+    for (int i = 0; i < BLOCK_SIZE; ++i) {
+        if (i < block.size()) {
+            bl[i] = block.c_str()[i];
+        } else {
+            bl[i] = 0;
+        }
+    }
+
     u32 w[WORD_COUNT];
 
     for (int i = 0; i < BLOCK_SIZE / WORD_SIZE; ++i) {

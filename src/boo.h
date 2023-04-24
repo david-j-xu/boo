@@ -75,8 +75,11 @@ class BooContext {
      * @brief does a hash of each of the files, and a total hash for a commit
      * if it were to exist
      *
+     * @return std::unordered_map<std::string, std::string> a map of the current
+     * hashes
+     *
      */
-    void calculate_current_hashes();
+    std::unordered_map<std::string, std::string> calculate_current_hashes();
 
     /**
      * @brief Creates a commit. Contingent on hashes being calculated beforehand
@@ -99,9 +102,9 @@ class BooContext {
      * @brief Get the meta filename of commit object
      *
      * @param commit the commit hash
-     * @return std::string the path to the meta file
+     * @return std::filesystem::path the path to the meta file
      */
-    std::string get_meta_file_of_commit(std::string commit);
+    std::filesystem::path get_meta_file_of_commit(std::string commit);
 
     /**
      * @brief Gets the filepath to the log file
@@ -138,6 +141,59 @@ class BooContext {
      * @return std::string the file name
      */
     std::string get_head_file();
+
+    /**
+     * @brief Gets the path to the commit folder
+     *
+     * @param commit the commit hash
+     * @return filesystem::path the path to the folder
+     */
+    std::filesystem::path get_commit_folder(std::string commit);
+
+    /**
+     * @brief Parses a meta file for a commit, if it exists (if it doesn't,
+     * returns empty map).
+     *
+     * @param commit the commit hash
+     * @return std::unordered_map<std::string, std::string> a map from
+     * filepath to hash
+     */
+    std::unordered_map<std::string, std::string> parse_meta_file(
+        std::string commit);
+
+    /**
+     * @brief Returns whether a commit exists
+     *
+     * @param commit the commit hash
+     * @return true if the commit exists
+     * @return false otherwise
+     */
+    bool exists_commit(std::string commit);
+
+    /**
+     * @brief Calculates the difference between a from set of hashes (from
+     * path to hash) and a to set of hashes
+     *
+     * @param from_hash the original hashes
+     * @param to_hash the changed hashes
+     * @return std::tuple<std::unordered_set<std::string>,
+     * std::unordered_set<std::string>, std::unordered_set<std::string>> a
+     * tuple of created_files, modified_files, and deleted_files
+     */
+    std::tuple<std::unordered_set<std::string>, std::unordered_set<std::string>,
+               std::unordered_set<std::string>>
+    calculate_diffs(std::unordered_map<std::string, std::string> from_hash,
+                    std::unordered_map<std::string, std::string> to_hash);
+
+    /**
+     * @brief resets to a previous commit
+     *
+     * @param commit the commit to reset to
+     * @param force to overwrite any staged changes
+     * @return true if the reset was successful
+     * @return false otherwise
+     */
+    bool reset(std::string commit, bool force);
 
    private:
     std::filesystem::path repo_dir;
